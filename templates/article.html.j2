@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$title</title>
+  <style>
+    :root {
+      --page-bg: #eef2f7;
+      --hero-bg: linear-gradient(135deg, #0f2759 0%, #1d2c82 100%);
+      --text-main: #1c2741;
+      --text-muted: #6d7b92;
+      --card-bg: #ffffff;
+      --accent: #ff6b57;
+      --accent-soft: #eaf1ff;
+      --line: #dbe4f0;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+      background: var(--page-bg);
+      color: var(--text-main);
+      line-height: 1.7;
+    }
+
+    .hero {
+      background: var(--hero-bg);
+      color: #ffffff;
+      padding: 56px 20px 110px;
+    }
+
+    .hero-inner,
+    .content {
+      max-width: 840px;
+      margin: 0 auto;
+    }
+
+    .crumb {
+      display: inline-block;
+      margin-bottom: 28px;
+      color: #bfd3ff;
+      text-decoration: none;
+      font-size: 15px;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .badge-hot {
+      background: var(--accent);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .badge-theme {
+      color: #bfd3ff;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 6vw, 60px);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin-top: 20px;
+      font-size: 24px;
+      color: #dbe6ff;
+    }
+
+    .meta {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+      font-size: 15px;
+      color: #bfd3ff;
+    }
+
+    .summary-card {
+      margin-top: -62px;
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 28px 24px 24px;
+      box-shadow: 0 12px 36px rgba(16, 32, 77, 0.12);
+      border: 1px solid rgba(209, 220, 236, 0.9);
+    }
+
+    .summary-title {
+      margin: 0 0 18px;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .summary-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 14px;
+    }
+
+    .summary-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .summary-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #3268ff;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 14px;
+      margin-top: 2px;
+    }
+
+    .content {
+      padding: 56px 20px 72px;
+    }
+
+    section {
+      margin-top: 42px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 {
+      font-size: 36px;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      margin: 0 0 18px;
+    }
+
+    p {
+      margin: 0 0 16px;
+      font-size: 18px;
+    }
+
+    .tips,
+    .tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .notice {
+      margin-top: 36px;
+      padding: 20px 22px;
+      border-radius: 18px;
+      background: #fff8e8;
+      color: #5a4a14;
+      border: 1px solid #f1e0a4;
+    }
+
+    @media (max-width: 640px) {
+      .hero {
+        padding-top: 42px;
+        padding-bottom: 96px;
+      }
+
+      .subtitle {
+        font-size: 18px;
+      }
+
+      .summary-card {
+        margin-top: -50px;
+        padding: 22px 18px;
+      }
+
+      h2 {
+        font-size: 28px;
+      }
+
+      p {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <a class="crumb" href="#">← 홈으로</a>
+      <div class="badge-row">
+        <span class="badge-hot">HOT 이슈</span>
+        <span class="badge-theme">$theme</span>
+      </div>
+      <h1>$title</h1>
+      <p class="subtitle">$subtitle</p>
+      <div class="meta">
+        <span>발행: $published_label</span>
+        <span>업데이트: $updated_label</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <article>
+      <div class="summary-card">
+        <h2 class="summary-title">이 글의 핵심 요약</h2>
+        <ol class="summary-list">
+          $summary_items
+        </ol>
+      </div>
+
+      $section_items
+
+      <section>
+        <h2>실천 포인트</h2>
+        <div class="tips">
+          $tip_items
+        </div>
+      </section>
+
+      <section>
+        <h2>관련 키워드</h2>
+        <div class="tags">
+          $tag_items
+        </div>
+      </section>
+
+      <div class="notice">
+        $disclaimer
+      </div>
+    </article>
+  </main>
+</body>
+</html>

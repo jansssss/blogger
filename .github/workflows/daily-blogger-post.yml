@@ -1,0 +1,67 @@
+name: Daily Blogger Post
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic_id:
+        description: "Optional topic id to publish"
+        required: false
+        type: string
+      mode:
+        description: "Publish mode"
+        required: false
+        default: draft
+        type: choice
+        options:
+          - draft
+          - publish
+  schedule:
+    - cron: "0 22 * * *"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Write environment file
+        shell: bash
+        run: |
+          cat <<'EOF' > .env
+          BLOG_THEME_NAME=${{ secrets.BLOG_THEME_NAME }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL=${{ secrets.OPENAI_MODEL }}
+          BLOGGER_BLOG_ID=${{ secrets.BLOGGER_BLOG_ID }}
+          BLOGGER_ACCESS_TOKEN=${{ secrets.BLOGGER_ACCESS_TOKEN }}
+          BLOGGER_REFRESH_TOKEN=${{ secrets.BLOGGER_REFRESH_TOKEN }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          BLOGGER_PUBLISH_MODE=${{ inputs.mode || secrets.BLOGGER_PUBLISH_MODE || 'draft' }}
+          EOF
+
+      - name: Publish post
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.topic_id }}" ]; then
+            python -m src.main publish --topic-id "${{ inputs.topic_id }}" --mode "${{ inputs.mode || 'draft' }}"
+          else
+            python -m src.main publish --mode "${{ inputs.mode || 'draft' }}"
+          fi
+
+      - name: Commit topic status updates
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/topics.csv output/payloads
+          git diff --cached --quiet || git commit -m "chore: update blogger topic status"
+          git push
