@@ -13,13 +13,8 @@ class HtmlRenderer:
 
     def render(self, article: Article) -> str:
         summary_items = "\n".join(
-            (
-                '<li class="summary-item">'
-                f'<span class="summary-num">{index}</span>'
-                f"<span>{html.escape(item)}</span>"
-                "</li>"
-            )
-            for index, item in enumerate(article.summary_points, start=1)
+            f"<li>{html.escape(item)}</li>"
+            for item in article.summary_points
         )
         section_items = "\n".join(
             (
@@ -30,8 +25,8 @@ class HtmlRenderer:
             )
             for section in article.sections
         )
-        tip_items = "\n".join(f'<span class="chip">{html.escape(item)}</span>' for item in article.action_tips)
-        tag_items = "\n".join(f'<span class="chip">{html.escape(tag)}</span>' for tag in article.tags)
+        tip_items = "\n".join(f'<span class="hb-chip">{html.escape(item)}</span>' for item in article.action_tips)
+        tag_items = "\n".join(f'<span class="hb-chip">{html.escape(tag)}</span>' for tag in article.tags)
         return self.template.safe_substitute(
             title=html.escape(article.title),
             subtitle=html.escape(article.subtitle),
