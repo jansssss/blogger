@@ -34,19 +34,25 @@ jobs:
           python-version: "3.12"
 
       - name: Write environment file
+        env:
+          BLOG_THEME_NAME: ${{ secrets.BLOG_THEME_NAME }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
+          BLOGGER_REFRESH_TOKEN: ${{ secrets.BLOGGER_REFRESH_TOKEN }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          BLOGGER_PUBLISH_MODE: ${{ inputs.mode || secrets.BLOGGER_PUBLISH_MODE || 'draft' }}
         shell: bash
         run: |
-          cat <<'EOF' > .env
-          BLOG_THEME_NAME=${{ secrets.BLOG_THEME_NAME }}
-          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL=${{ secrets.OPENAI_MODEL }}
-          BLOGGER_BLOG_ID=${{ secrets.BLOGGER_BLOG_ID }}
-          BLOGGER_ACCESS_TOKEN=${{ secrets.BLOGGER_ACCESS_TOKEN }}
-          BLOGGER_REFRESH_TOKEN=${{ secrets.BLOGGER_REFRESH_TOKEN }}
-          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-          BLOGGER_PUBLISH_MODE=${{ inputs.mode || secrets.BLOGGER_PUBLISH_MODE || 'draft' }}
-          EOF
+          printf 'BLOG_THEME_NAME=%s\n' "$BLOG_THEME_NAME" >> .env
+          printf 'OPENAI_API_KEY=%s\n' "$OPENAI_API_KEY" >> .env
+          printf 'OPENAI_MODEL=%s\n' "$OPENAI_MODEL" >> .env
+          printf 'BLOGGER_BLOG_ID=%s\n' "$BLOGGER_BLOG_ID" >> .env
+          printf 'BLOGGER_REFRESH_TOKEN=%s\n' "$BLOGGER_REFRESH_TOKEN" >> .env
+          printf 'GOOGLE_CLIENT_ID=%s\n' "$GOOGLE_CLIENT_ID" >> .env
+          printf 'GOOGLE_CLIENT_SECRET=%s\n' "$GOOGLE_CLIENT_SECRET" >> .env
+          printf 'BLOGGER_PUBLISH_MODE=%s\n' "$BLOGGER_PUBLISH_MODE" >> .env
 
       - name: Publish post
         shell: bash
