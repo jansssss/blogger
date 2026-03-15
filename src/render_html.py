@@ -13,20 +13,20 @@ class HtmlRenderer:
 
     def render(self, article: Article) -> str:
         summary_items = "\n".join(
-            f"<li>{html.escape(item)}</li>"
+            f'<li style="font-size: 15px; color: #2a3a5c; line-height: 1.6;">{html.escape(item)}</li>'
             for item in article.summary_points
         )
         section_items = "\n".join(
             (
                 "<section>"
-                f"<h2>{html.escape(section.heading)}</h2>"
-                + "".join(f"<p>{html.escape(paragraph)}</p>" for paragraph in section.paragraphs)
+                f'<h2 style="font-size: 22px; font-weight: 800; color: #1c2741; margin: 36px 0 12px; padding-bottom: 8px; border-bottom: 2px solid #eef2f7; letter-spacing: -0.02em; line-height: 1.4;">{html.escape(section.heading)}</h2>'
+                + "".join(f'<p style="font-size: 16px; color: #3a4a62; margin: 0 0 14px; line-height: 1.85;">{html.escape(paragraph)}</p>' for paragraph in section.paragraphs)
                 + "</section>"
             )
             for section in article.sections
         )
-        tip_items = "\n".join(f'<span class="hb-chip">{html.escape(item)}</span>' for item in article.action_tips)
-        tag_items = "\n".join(f'<span class="hb-chip">{html.escape(tag)}</span>' for tag in article.tags)
+        tip_items = "\n".join(f'<span style="display: inline-block; padding: 6px 14px; border-radius: 999px; background: #fff; border: 1.5px solid #ffcfc9; color: #cc3a28; font-size: 13px; font-weight: 600; line-height: 1;">{html.escape(item)}</span>' for item in article.action_tips)
+        tag_items = "\n".join(f'<span style="display: inline-block; padding: 6px 14px; border-radius: 999px; background: #fff; border: 1.5px solid #bdd0ff; color: #2652cc; font-size: 13px; font-weight: 600; line-height: 1;">{html.escape(tag)}</span>' for tag in article.tags)
         return self.template.safe_substitute(
             title=html.escape(article.title),
             subtitle=html.escape(article.subtitle),
