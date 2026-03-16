@@ -12,15 +12,16 @@ class HtmlRenderer:
         self.template = Template(template_path.read_text(encoding="utf-8"))
 
     def render(self, article: Article) -> str:
+        _font = "'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', sans-serif"
         summary_items = "\n".join(
-            f'<li style="font-size: 15px; color: #2a3a5c; line-height: 1.6;">{html.escape(item)}</li>'
+            f'<li style="font-family: {_font}; font-size: 15px; color: #2a3a5c; line-height: 1.6; word-break: keep-all;">{html.escape(item)}</li>'
             for item in article.summary_points
         )
         section_items = "\n".join(
             (
                 "<section>"
-                f'<h2 style="font-size: 22px; font-weight: 800; color: #1c2741; margin: 36px 0 12px; padding-bottom: 8px; border-bottom: 2px solid #eef2f7; letter-spacing: -0.02em; line-height: 1.4;">{html.escape(section.heading)}</h2>'
-                + "".join(f'<p style="font-size: 16px; color: #3a4a62; margin: 0 0 14px; line-height: 1.85;">{html.escape(paragraph)}</p>' for paragraph in section.paragraphs)
+                f'<h2 style="font-family: {_font}; font-size: 22px; font-weight: 800; color: #1c2741; margin: 36px 0 12px; padding-bottom: 8px; border-bottom: 2px solid #eef2f7; letter-spacing: -0.02em; line-height: 1.4; word-break: keep-all;">{html.escape(section.heading)}</h2>'
+                + "".join(f'<p style="font-family: {_font}; font-size: 16px; color: #3a4a62; margin: 0 0 14px; line-height: 1.85; word-break: keep-all;">{html.escape(paragraph)}</p>' for paragraph in section.paragraphs)
                 + "</section>"
             )
             for section in article.sections
