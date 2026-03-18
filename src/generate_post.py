@@ -54,8 +54,10 @@ class ArticleGenerator:
         if self.anthropic_api_key:
             try:
                 return self._build_with_claude(topic)
-            except Exception:
+            except Exception as exc:
+                print(f"[WARN] Claude API 실패, template fallback 사용: {exc}", flush=True)
                 return self._build_with_template(topic)
+        print("[WARN] ANTHROPIC_API_KEY 없음, template fallback 사용", flush=True)
         return self._build_with_template(topic)
 
     def _build_with_template(self, topic: Topic) -> Article:
