@@ -16,6 +16,7 @@ class AppConfig:
     payload_dir: Path
     anthropic_api_key: str | None
     anthropic_model: str
+    perplexity_api_key: str | None
     blogger_blog_id: str | None
     blogger_access_token: str | None
     blogger_refresh_token: str | None
@@ -51,6 +52,7 @@ def load_config() -> AppConfig:
         payload_dir=project_root / "output" / "payloads",
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or None,
         anthropic_model=os.getenv("ANTHROPIC_MODEL") or "claude-sonnet-4-6",
+        perplexity_api_key=os.getenv("PERPLEXITY_API_KEY") or None,
         blogger_blog_id=os.getenv("BLOGGER_BLOG_ID") or None,
         blogger_access_token=os.getenv("BLOGGER_ACCESS_TOKEN") or None,
         blogger_refresh_token=os.getenv("BLOGGER_REFRESH_TOKEN") or None,

@@ -53,10 +53,10 @@ class ArticleGenerator:
         self.anthropic_api_key = anthropic_api_key
         self.anthropic_model = anthropic_model
 
-    def build_article(self, topic: Topic) -> Article:
+    def build_article(self, topic: Topic, research: str | None = None) -> Article:
         if self.anthropic_api_key:
             try:
-                return self._build_with_claude(topic)
+                return self._build_with_claude(topic, research)
             except Exception as exc:
                 print(f"[WARN] Claude API 실패, template fallback 사용: {exc}", flush=True)
                 return self._build_with_template(topic)
@@ -134,7 +134,7 @@ class ArticleGenerator:
             sources=[],
         )
 
-    def _build_with_claude(self, topic: Topic) -> Article:
+    def _build_with_claude(self, topic: Topic, research: str | None = None) -> Article:
         json_format = (
             '{"title": "제목", "subtitle": "부제목", '
             '"summary_points": ["요약1 (50자 이상, 수치 포함)", "요약2", "요약3", "요약4", "요약5"], '
@@ -147,13 +147,18 @@ class ArticleGenerator:
             '"disclaimer": "면책고지 문장", '
             '"sources": ["질병관리청, 2023", "국민건강영양조사, 2022", ...]}'
         )
+        research_section = (
+            f"\n\n━━━ 리서치 자료 (반드시 활용) ━━━\n{research}\n"
+            "위 수치와 출처를 글에 직접 인용하세요. 수치를 바꾸거나 새로 만들지 마세요.\n"
+        ) if research else ""
         instructions = (
             f"{self.prompt_text}\n\n"
             f"주제: {topic.title_hint}\n"
             f"관점: {topic.angle}\n"
             f"대상 독자: {topic.target_reader}\n"
             f"핵심 키워드: {', '.join(topic.keywords)}\n"
-            f"반드시 반영할 요소: {topic.must_include}\n\n"
+            f"반드시 반영할 요소: {topic.must_include}"
+            f"{research_section}\n\n"
             f"아래 JSON 형식으로만 응답하세요. JSON 외 다른 텍스트는 출력하지 마세요:\n{json_format}"
         )
         payload = requests_post(
