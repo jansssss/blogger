@@ -164,7 +164,7 @@ class ArticleGenerator:
             },
             payload={
                 "model": self.anthropic_model,
-                "max_tokens": 12000,
+                "max_tokens": 8000,
                 "messages": [{"role": "user", "content": instructions}],
             },
             timeout=120,
