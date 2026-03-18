@@ -50,7 +50,7 @@ def load_config() -> AppConfig:
         preview_dir=project_root / "output" / "previews",
         payload_dir=project_root / "output" / "payloads",
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or None,
-        anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
+        anthropic_model=os.getenv("ANTHROPIC_MODEL") or "claude-haiku-4-5-20251001",
         blogger_blog_id=os.getenv("BLOGGER_BLOG_ID") or None,
         blogger_access_token=os.getenv("BLOGGER_ACCESS_TOKEN") or None,
         blogger_refresh_token=os.getenv("BLOGGER_REFRESH_TOKEN") or None,
