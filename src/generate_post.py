@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import unicodedata
 from urllib import request
+from urllib.error import HTTPError
 
 from src.topic_queue import Topic
 
@@ -201,5 +202,9 @@ class ArticleGenerator:
 def requests_post(url: str, headers: dict[str, str], payload: dict, timeout: int = 60) -> dict:
     raw_body = json.dumps(payload).encode("utf-8")
     http_request = request.Request(url, data=raw_body, headers=headers, method="POST")
-    with request.urlopen(http_request, timeout=timeout) as response:
-        return json.loads(response.read().decode("utf-8"))
+    try:
+        with request.urlopen(http_request, timeout=timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except HTTPError as e:
+        body = e.read().decode("utf-8")
+        raise RuntimeError(f"HTTP {e.code} {e.reason}: {body}") from e
