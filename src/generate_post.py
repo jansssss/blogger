@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 import re
@@ -15,6 +15,7 @@ from src.topic_queue import Topic
 class ArticleSection:
     heading: str
     paragraphs: list[str]
+    expert_insight: str = ""
 
 
 @dataclass
@@ -30,6 +31,7 @@ class Article:
     disclaimer: str
     published_label: str
     updated_label: str
+    sources: list[str] = field(default_factory=list)
 
     @property
     def slug(self) -> str:
@@ -128,16 +130,21 @@ class ArticleGenerator:
             disclaimer=disclaimer,
             published_label=published_label,
             updated_label=updated_label,
+            sources=[],
         )
 
     def _build_with_claude(self, topic: Topic) -> Article:
         json_format = (
             '{"title": "제목", "subtitle": "부제목", '
-            '"summary_points": ["요약1", "요약2", "요약3", "요약4", "요약5"], '
-            '"sections": [{"heading": "섹션제목", "paragraphs": ["문단1", "문단2"]}, ...], '
-            '"action_tips": ["팁1", "팁2", "팁3", "팁4"], '
+            '"summary_points": ["요약1 (50자 이상, 수치 포함)", "요약2", "요약3", "요약4", "요약5"], '
+            '"sections": ['
+            '{"heading": "섹션제목", "paragraphs": ["문단1 (5~6문장, 수치+출처 포함)", "문단2", "문단3"], "expert_insight": "전문가 인사이트 1~2문장 (없으면 빈 문자열)"}, '
+            '...'
+            '], '
+            '"action_tips": ["구체적 수치 포함 팁1", "팁2", "팁3", "팁4", "팁5", "팁6"], '
             '"tags": ["태그1", "태그2", "태그3"], '
-            '"disclaimer": "면책고지 문장"}'
+            '"disclaimer": "면책고지 문장", '
+            '"sources": ["질병관리청, 2023", "국민건강영양조사, 2022", ...]}'
         )
         instructions = (
             f"{self.prompt_text}\n\n"
@@ -157,9 +164,10 @@ class ArticleGenerator:
             },
             payload={
                 "model": self.anthropic_model,
-                "max_tokens": 4096,
+                "max_tokens": 12000,
                 "messages": [{"role": "user", "content": instructions}],
             },
+            timeout=120,
         )
         content_text = payload["content"][0]["text"]
         json_match = re.search(r"\{.*\}", content_text, re.DOTALL)
@@ -173,17 +181,25 @@ class ArticleGenerator:
             title=data["title"],
             subtitle=data["subtitle"],
             summary_points=data["summary_points"],
-            sections=[ArticleSection(**section) for section in data["sections"]],
+            sections=[
+                ArticleSection(
+                    heading=s["heading"],
+                    paragraphs=s["paragraphs"],
+                    expert_insight=s.get("expert_insight", ""),
+                )
+                for s in data["sections"]
+            ],
             action_tips=data["action_tips"],
             tags=data["tags"],
             disclaimer=data["disclaimer"],
             published_label=f"{now.year}년 {now.month}월",
             updated_label=f"{now.year}년 {now.month}월 {now.day}일",
+            sources=data.get("sources", []),
         )
 
 
-def requests_post(url: str, headers: dict[str, str], payload: dict) -> dict:
+def requests_post(url: str, headers: dict[str, str], payload: dict, timeout: int = 60) -> dict:
     raw_body = json.dumps(payload).encode("utf-8")
     http_request = request.Request(url, data=raw_body, headers=headers, method="POST")
-    with request.urlopen(http_request, timeout=60) as response:
+    with request.urlopen(http_request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))

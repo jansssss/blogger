@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from urllib import parse, request
+from urllib import error, parse, request
 
 from src.generate_post import Article
 
@@ -35,7 +35,7 @@ class BloggerClient:
     def publish(self, article: Article, html: str, mode: str) -> BloggerResult:
         if not self.blog_id:
             raise ValueError("BLOGGER_BLOG_ID must be configured.")
-        token = self.access_token or self._refresh_access_token()
+        token = self._get_token()
         if not token:
             raise ValueError(
                 "Provide BLOGGER_ACCESS_TOKEN for testing or BLOGGER_REFRESH_TOKEN + GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET for automation."
@@ -63,13 +63,26 @@ class BloggerClient:
             },
             method="POST",
         )
-        with request.urlopen(http_request, timeout=60) as response:
-            data = json.loads(response.read().decode("utf-8"))
+        data = self._open_json(http_request)
         return BloggerResult(
             post_id=data["id"],
             url=data.get("url", ""),
             status="draft" if params["isDraft"] == "true" else "published",
         )
+
+    def list_blogs(self) -> list[dict]:
+        token = self._get_token()
+        if not token:
+            raise ValueError(
+                "Provide BLOGGER_ACCESS_TOKEN for testing or BLOGGER_REFRESH_TOKEN + GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET for automation."
+            )
+        http_request = request.Request(
+            "https://www.googleapis.com/blogger/v3/users/self/blogs",
+            headers={"Authorization": f"Bearer {token}"},
+            method="GET",
+        )
+        data = self._open_json(http_request)
+        return data.get("items", [])
 
     def _refresh_access_token(self) -> str | None:
         if not self.refresh_token or not self.google_client_id or not self.google_client_secret:
@@ -88,6 +101,17 @@ class BloggerClient:
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             method="POST",
         )
-        with request.urlopen(http_request, timeout=60) as response:
-            data = json.loads(response.read().decode("utf-8"))
+        data = self._open_json(http_request)
         return data["access_token"]
+
+    def _get_token(self) -> str | None:
+        return self.access_token or self._refresh_access_token()
+
+    @staticmethod
+    def _open_json(http_request: request.Request) -> dict:
+        try:
+            with request.urlopen(http_request, timeout=60) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"HTTP {exc.code} {exc.reason}: {body}") from exc
