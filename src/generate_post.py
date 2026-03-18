@@ -168,7 +168,7 @@ class ArticleGenerator:
                 "max_tokens": 8000,
                 "messages": [{"role": "user", "content": instructions}],
             },
-            timeout=120,
+            timeout=300,
         )
         content_text = payload["content"][0]["text"]
         json_match = re.search(r"\{.*\}", content_text, re.DOTALL)
