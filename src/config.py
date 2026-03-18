@@ -14,8 +14,8 @@ class AppConfig:
     prompt_path: Path
     preview_dir: Path
     payload_dir: Path
-    openai_api_key: str | None
-    openai_model: str
+    anthropic_api_key: str | None
+    anthropic_model: str
     blogger_blog_id: str | None
     blogger_access_token: str | None
     blogger_refresh_token: str | None
@@ -49,8 +49,8 @@ def load_config() -> AppConfig:
         prompt_path=project_root / "prompts" / "health_article_prompt.txt",
         preview_dir=project_root / "output" / "previews",
         payload_dir=project_root / "output" / "payloads",
-        openai_api_key=os.getenv("OPENAI_API_KEY") or None,
-        openai_model=os.getenv("OPENAI_MODEL", "gpt-5-mini"),
+        anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or None,
+        anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
         blogger_blog_id=os.getenv("BLOGGER_BLOG_ID") or None,
         blogger_access_token=os.getenv("BLOGGER_ACCESS_TOKEN") or None,
         blogger_refresh_token=os.getenv("BLOGGER_REFRESH_TOKEN") or None,

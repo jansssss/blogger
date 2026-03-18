@@ -15,6 +15,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("list-topics", help="대기 중인 주제를 출력합니다.")
+    subparsers.add_parser("list-blogs", help="현재 Blogger 인증으로 접근 가능한 블로그를 출력합니다.")
 
     preview_parser = subparsers.add_parser("preview", help="다음 주제 또는 특정 주제를 HTML로 미리보기 생성합니다.")
     preview_parser.add_argument("--topic-id", help="특정 주제 ID")
@@ -42,18 +43,32 @@ def main() -> None:
     args = parser.parse_args()
     config = load_config()
     topic_queue = TopicQueue(config.topics_path)
+    client = BloggerClient(
+        blog_id=config.blogger_blog_id,
+        access_token=config.blogger_access_token,
+        refresh_token=config.blogger_refresh_token,
+        google_client_id=config.google_client_id,
+        google_client_secret=config.google_client_secret,
+        payload_dir=config.payload_dir,
+    )
 
     if args.command == "list-topics":
         for topic in topic_queue.list_pending():
             print(f"{topic.id}\t{topic.priority}\t{topic.title_hint}")
         return
 
+    if args.command == "list-blogs":
+        blogs = client.list_blogs()
+        for blog in blogs:
+            print(f'{blog.get("id")}\t{blog.get("name")}\t{blog.get("url", "")}')
+        return
+
     topic = pick_topic(topic_queue, getattr(args, "topic_id", None))
     generator = ArticleGenerator(
         theme_name=config.theme_name,
         prompt_path=config.prompt_path,
-        openai_api_key=config.openai_api_key,
-        openai_model=config.openai_model,
+        anthropic_api_key=config.anthropic_api_key,
+        anthropic_model=config.anthropic_model,
     )
     article = generator.build_article(topic)
     renderer = HtmlRenderer(config.template_path)
@@ -64,14 +79,6 @@ def main() -> None:
         print(f"Preview created: {path}")
         return
 
-    client = BloggerClient(
-        blog_id=config.blogger_blog_id,
-        access_token=config.blogger_access_token,
-        refresh_token=config.blogger_refresh_token,
-        google_client_id=config.google_client_id,
-        google_client_secret=config.google_client_secret,
-        payload_dir=config.payload_dir,
-    )
     publish_mode = args.mode or config.blogger_publish_mode
     result = client.publish(article, html, publish_mode)
     topic_queue.update_status(topic.id, "drafted" if publish_mode == "draft" else "published")

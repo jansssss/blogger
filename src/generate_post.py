@@ -44,16 +44,16 @@ class Article:
 
 
 class ArticleGenerator:
-    def __init__(self, theme_name: str, prompt_path: Path, openai_api_key: str | None, openai_model: str) -> None:
+    def __init__(self, theme_name: str, prompt_path: Path, anthropic_api_key: str | None, anthropic_model: str) -> None:
         self.theme_name = theme_name
         self.prompt_text = prompt_path.read_text(encoding="utf-8")
-        self.openai_api_key = openai_api_key
-        self.openai_model = openai_model
+        self.anthropic_api_key = anthropic_api_key
+        self.anthropic_model = anthropic_model
 
     def build_article(self, topic: Topic) -> Article:
-        if self.openai_api_key:
+        if self.anthropic_api_key:
             try:
-                return self._build_with_openai(topic)
+                return self._build_with_claude(topic)
             except Exception:
                 return self._build_with_template(topic)
         return self._build_with_template(topic)
@@ -128,60 +128,41 @@ class ArticleGenerator:
             updated_label=updated_label,
         )
 
-    def _build_with_openai(self, topic: Topic) -> Article:
-        schema = {
-            "type": "json_schema",
-            "json_schema": {
-                "name": "health_blog_article",
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "title": {"type": "string"},
-                        "subtitle": {"type": "string"},
-                        "summary_points": {"type": "array", "items": {"type": "string"}, "minItems": 5, "maxItems": 5},
-                        "sections": {
-                            "type": "array",
-                            "minItems": 4,
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "heading": {"type": "string"},
-                                    "paragraphs": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 3},
-                                },
-                                "required": ["heading", "paragraphs"],
-                                "additionalProperties": False,
-                            },
-                        },
-                        "action_tips": {"type": "array", "items": {"type": "string"}, "minItems": 4, "maxItems": 6},
-                        "tags": {"type": "array", "items": {"type": "string"}, "minItems": 3},
-                        "disclaimer": {"type": "string"},
-                    },
-                    "required": ["title", "subtitle", "summary_points", "sections", "action_tips", "tags", "disclaimer"],
-                    "additionalProperties": False,
-                },
-            },
-        }
+    def _build_with_claude(self, topic: Topic) -> Article:
+        json_format = (
+            '{"title": "제목", "subtitle": "부제목", '
+            '"summary_points": ["요약1", "요약2", "요약3", "요약4", "요약5"], '
+            '"sections": [{"heading": "섹션제목", "paragraphs": ["문단1", "문단2"]}, ...], '
+            '"action_tips": ["팁1", "팁2", "팁3", "팁4"], '
+            '"tags": ["태그1", "태그2", "태그3"], '
+            '"disclaimer": "면책고지 문장"}'
+        )
         instructions = (
             f"{self.prompt_text}\n\n"
             f"주제: {topic.title_hint}\n"
             f"관점: {topic.angle}\n"
             f"대상 독자: {topic.target_reader}\n"
             f"핵심 키워드: {', '.join(topic.keywords)}\n"
-            f"반드시 반영할 요소: {topic.must_include}"
+            f"반드시 반영할 요소: {topic.must_include}\n\n"
+            f"아래 JSON 형식으로만 응답하세요. JSON 외 다른 텍스트는 출력하지 마세요:\n{json_format}"
         )
         payload = requests_post(
-            "https://api.openai.com/v1/responses",
+            "https://api.anthropic.com/v1/messages",
             headers={
-                "Authorization": f"Bearer {self.openai_api_key}",
+                "x-api-key": self.anthropic_api_key,
+                "anthropic-version": "2023-06-01",
                 "Content-Type": "application/json",
             },
             payload={
-                "model": self.openai_model,
-                "input": instructions,
-                "text": {"format": schema},
+                "model": self.anthropic_model,
+                "max_tokens": 4096,
+                "messages": [{"role": "user", "content": instructions}],
             },
         )
-        content_text = self._extract_output_text(payload)
+        content_text = payload["content"][0]["text"]
+        json_match = re.search(r"\{.*\}", content_text, re.DOTALL)
+        if json_match:
+            content_text = json_match.group(0)
         data = json.loads(content_text)
         now = datetime.now()
         return Article(
@@ -197,17 +178,6 @@ class ArticleGenerator:
             published_label=f"{now.year}년 {now.month}월",
             updated_label=f"{now.year}년 {now.month}월 {now.day}일",
         )
-
-    @staticmethod
-    def _extract_output_text(payload: dict) -> str:
-        if "output_text" in payload:
-            return payload["output_text"]
-        for item in payload.get("output", []):
-            for content in item.get("content", []):
-                text = content.get("text")
-                if text:
-                    return text
-        raise ValueError("No output text found in OpenAI response payload.")
 
 
 def requests_post(url: str, headers: dict[str, str], payload: dict) -> dict:
