@@ -38,8 +38,8 @@ jobs:
       - name: Write environment file
         env:
           BLOG_THEME_NAME: ${{ secrets.BLOG_THEME_NAME }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ANTHROPIC_MODEL: ${{ secrets.ANTHROPIC_MODEL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
           BLOGGER_REFRESH_TOKEN: ${{ secrets.BLOGGER_REFRESH_TOKEN }}
@@ -49,8 +49,8 @@ jobs:
         shell: bash
         run: |
           printf 'BLOG_THEME_NAME=%s\n' "$BLOG_THEME_NAME" >> .env
-          printf 'ANTHROPIC_API_KEY=%s\n' "$ANTHROPIC_API_KEY" >> .env
-          printf 'ANTHROPIC_MODEL=%s\n' "$ANTHROPIC_MODEL" >> .env
+          printf 'OPENAI_API_KEY=%s\n' "$OPENAI_API_KEY" >> .env
+          printf 'OPENAI_MODEL=%s\n' "$OPENAI_MODEL" >> .env
           printf 'PERPLEXITY_API_KEY=%s\n' "$PERPLEXITY_API_KEY" >> .env
           printf 'BLOGGER_BLOG_ID=%s\n' "$BLOGGER_BLOG_ID" >> .env
           printf 'BLOGGER_REFRESH_TOKEN=%s\n' "$BLOGGER_REFRESH_TOKEN" >> .env

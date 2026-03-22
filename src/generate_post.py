@@ -47,20 +47,22 @@ class Article:
 
 
 class ArticleGenerator:
-    def __init__(self, theme_name: str, prompt_path: Path, anthropic_api_key: str | None, anthropic_model: str) -> None:
+    OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
+
+    def __init__(self, theme_name: str, prompt_path: Path, openai_api_key: str | None, openai_model: str) -> None:
         self.theme_name = theme_name
         self.prompt_text = prompt_path.read_text(encoding="utf-8")
-        self.anthropic_api_key = anthropic_api_key
-        self.anthropic_model = anthropic_model
+        self.openai_api_key = openai_api_key
+        self.openai_model = openai_model
 
     def build_article(self, topic: Topic, research: str | None = None) -> Article:
-        if self.anthropic_api_key:
+        if self.openai_api_key:
             try:
-                return self._build_with_claude(topic, research)
+                return self._build_with_openai(topic, research)
             except Exception as exc:
-                print(f"[WARN] Claude API 실패, template fallback 사용: {exc}", flush=True)
+                print(f"[WARN] OpenAI API 실패, template fallback 사용: {exc}", flush=True)
                 return self._build_with_template(topic)
-        print("[WARN] ANTHROPIC_API_KEY 없음, template fallback 사용", flush=True)
+        print("[WARN] OPENAI_API_KEY 없음, template fallback 사용", flush=True)
         return self._build_with_template(topic)
 
     def _build_with_template(self, topic: Topic) -> Article:
@@ -134,7 +136,7 @@ class ArticleGenerator:
             sources=[],
         )
 
-    def _build_with_claude(self, topic: Topic, research: str | None = None) -> Article:
+    def _build_with_openai(self, topic: Topic, research: str | None = None) -> Article:
         json_format = (
             '{"title": "제목", "subtitle": "부제목", '
             '"summary_points": ["요약1 (50자 이상, 수치 포함)", "요약2", "요약3", "요약4", "요약5"], '
@@ -161,21 +163,27 @@ class ArticleGenerator:
             f"{research_section}\n\n"
             f"아래 JSON 형식으로만 응답하세요. JSON 외 다른 텍스트는 출력하지 마세요:\n{json_format}"
         )
-        payload = requests_post(
-            "https://api.anthropic.com/v1/messages",
+        print(f"[WRITER] OpenAI API 호출 중... 모델: {self.openai_model}", flush=True)
+        result = requests_post(
+            self.OPENAI_API_URL,
             headers={
-                "x-api-key": self.anthropic_api_key,
-                "anthropic-version": "2023-06-01",
+                "Authorization": f"Bearer {self.openai_api_key}",
                 "Content-Type": "application/json",
             },
             payload={
-                "model": self.anthropic_model,
-                "max_tokens": 8000,
+                "model": self.openai_model,
+                "max_completion_tokens": 8000,
+                "temperature": 0.3,
                 "messages": [{"role": "user", "content": instructions}],
             },
             timeout=300,
         )
-        content_text = payload["content"][0]["text"]
+        content_text = result["choices"][0]["message"]["content"]
+        usage = result.get("usage", {})
+        print(
+            f"[WRITER] 완료! 토큰={usage.get('prompt_tokens', 0)}→{usage.get('completion_tokens', 0)}",
+            flush=True,
+        )
         json_match = re.search(r"\{.*\}", content_text, re.DOTALL)
         if json_match:
             content_text = json_match.group(0)

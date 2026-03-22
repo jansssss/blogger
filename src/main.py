@@ -76,8 +76,8 @@ def main() -> None:
     generator = ArticleGenerator(
         theme_name=config.theme_name,
         prompt_path=config.prompt_path,
-        anthropic_api_key=config.anthropic_api_key,
-        anthropic_model=config.anthropic_model,
+        openai_api_key=config.openai_api_key,
+        openai_model=config.openai_model,
     )
     article = generator.build_article(topic, research=research)
     renderer = HtmlRenderer(config.template_path)

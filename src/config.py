@@ -14,8 +14,8 @@ class AppConfig:
     prompt_path: Path
     preview_dir: Path
     payload_dir: Path
-    anthropic_api_key: str | None
-    anthropic_model: str
+    openai_api_key: str | None
+    openai_model: str              # 기본: gpt-5.4-mini (env로 교체 가능)
     perplexity_api_key: str | None
     blogger_blog_id: str | None
     blogger_access_token: str | None
@@ -50,8 +50,8 @@ def load_config() -> AppConfig:
         prompt_path=project_root / "prompts" / "health_article_prompt.txt",
         preview_dir=project_root / "output" / "previews",
         payload_dir=project_root / "output" / "payloads",
-        anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or None,
-        anthropic_model=os.getenv("ANTHROPIC_MODEL") or "claude-sonnet-4-6",
+        openai_api_key=os.getenv("OPENAI_API_KEY") or None,
+        openai_model=os.getenv("OPENAI_MODEL", "gpt-5.4-mini"),
         perplexity_api_key=os.getenv("PERPLEXITY_API_KEY") or None,
         blogger_blog_id=os.getenv("BLOGGER_BLOG_ID") or None,
         blogger_access_token=os.getenv("BLOGGER_ACCESS_TOKEN") or None,
