@@ -56,14 +56,9 @@ class ArticleGenerator:
         self.openai_model = openai_model
 
     def build_article(self, topic: Topic, research: str | None = None) -> Article:
-        if self.openai_api_key:
-            try:
-                return self._build_with_openai(topic, research)
-            except Exception as exc:
-                print(f"[WARN] OpenAI API 실패, template fallback 사용: {exc}", flush=True)
-                return self._build_with_template(topic)
-        print("[WARN] OPENAI_API_KEY 없음, template fallback 사용", flush=True)
-        return self._build_with_template(topic)
+        if not self.openai_api_key:
+            raise RuntimeError("OPENAI_API_KEY가 설정되지 않았습니다. GitHub Secrets를 확인하세요.")
+        return self._build_with_openai(topic, research)
 
     def _build_with_template(self, topic: Topic) -> Article:
         now = datetime.now()
