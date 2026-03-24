@@ -6,35 +6,118 @@ from string import Template
 
 from src.generate_post import Article
 
+_FONT = "'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', sans-serif"
+
+# 쿠팡 파트너스 제휴 상품 정의
+_AFFILIATE_PRODUCTS = [
+    {
+        "name": "단백질 보충제",
+        "desc": "근감소 예방·근육 유지를 돕는 고흡수 단백질",
+        "url": "https://link.coupang.com/a/eaqvqF",
+        "keywords": {"단백질", "근육", "근감소", "아미노산", "근력운동", "근육합성", "근육회복", "근육식단", "근력", "근감소증"},
+    },
+    {
+        "name": "오메가3",
+        "desc": "혈관·뇌 건강을 지키는 EPA/DHA 오메가3",
+        "url": "https://link.coupang.com/a/eaqxGL",
+        "keywords": {"혈관건강", "혈압", "심혈관", "뇌건강", "신경가소성", "혈액순환", "탄력성"},
+    },
+    {
+        "name": "관절 영양제",
+        "desc": "무릎·연골 보호를 위한 글루코사민·콜라겐",
+        "url": "https://link.coupang.com/a/eaqKPo",
+        "keywords": {"무릎통증", "관절", "무릎보호", "저충격운동", "관절보호", "스트레칭", "유연성"},
+    },
+    {
+        "name": "비타민D + 칼슘",
+        "desc": "뼈 건강과 낙상 예방을 위한 비타민D·칼슘 복합",
+        "url": "https://link.coupang.com/a/eaqLVY",
+        "keywords": {"낙상예방", "균형감각", "면역력", "뼈", "골밀도", "노년운동", "고령근육"},
+    },
+    {
+        "name": "마그네슘 · 수면 영양제",
+        "desc": "수면의 질 개선과 스트레스 완화에 도움",
+        "url": "https://link.coupang.com/a/eaqNVU",
+        "keywords": {"수면질", "숙면", "우울증", "정신건강", "스트레스", "마그네슘"},
+    },
+]
+
+_COUPANG_DISCLOSURE = "이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."
+
+
+def _pick_products(tags: list[str]) -> list[dict]:
+    """태그 키워드와 가장 많이 겹치는 상품 최대 2개 반환."""
+    tag_set = set(tags)
+    scored = [
+        (product, len(tag_set & product["keywords"]))
+        for product in _AFFILIATE_PRODUCTS
+    ]
+    scored.sort(key=lambda x: x[1], reverse=True)
+    # 매칭 0이라도 최소 1개는 노출 (단백질이 기본)
+    top = [p for p, score in scored[:2] if score > 0]
+    if not top:
+        top = [_AFFILIATE_PRODUCTS[0]]
+    return top
+
+
+def _build_cta_section(tags: list[str]) -> str:
+    products = _pick_products(tags)
+    cards = []
+    for p in products:
+        cards.append(
+            f'<a href="{p["url"]}" target="_blank" rel="noopener sponsored" '
+            f'style="display:flex; align-items:center; justify-content:space-between; gap:12px; '
+            f'text-decoration:none; background:#fff; border:1.5px solid #e1e8ff; border-radius:12px; '
+            f'padding:16px 18px; flex:1; min-width:240px; box-sizing:border-box;">'
+            f'<div>'
+            f'<div style="font-family:{_FONT}; font-size:13px; font-weight:700; color:#3268ff; margin-bottom:4px;">추천 영양제</div>'
+            f'<div style="font-family:{_FONT}; font-size:15px; font-weight:800; color:#1c2741; margin-bottom:6px; word-break:keep-all;">{html.escape(p["name"])}</div>'
+            f'<div style="font-family:{_FONT}; font-size:13px; color:#5a6a85; line-height:1.5; word-break:keep-all;">{html.escape(p["desc"])}</div>'
+            f'</div>'
+            f'<div style="flex-shrink:0; background:#ff6b57; color:#fff; font-family:{_FONT}; font-size:13px; '
+            f'font-weight:700; padding:10px 16px; border-radius:999px; white-space:nowrap;">쿠팡 구매 →</div>'
+            f'</a>'
+        )
+    cards_html = "\n".join(cards)
+    return (
+        f'<div style="margin-top:40px; padding-top:32px; border-top:2px solid #eef2f7;">'
+        f'<div style="font-family:{_FONT}; font-size:18px; font-weight:800; color:#1c2741; margin-bottom:16px; letter-spacing:-0.02em;">이 글과 함께 챙기면 좋은 영양제</div>'
+        f'<div style="display:flex; flex-wrap:wrap; gap:12px;">'
+        f'{cards_html}'
+        f'</div>'
+        f'<p style="font-family:{_FONT}; font-size:11px; color:#9aa5b8; margin:14px 0 0; line-height:1.6;">'
+        f'{html.escape(_COUPANG_DISCLOSURE)}</p>'
+        f'</div>'
+    )
+
 
 class HtmlRenderer:
     def __init__(self, template_path: Path) -> None:
         self.template = Template(template_path.read_text(encoding="utf-8"))
 
     def render(self, article: Article) -> str:
-        _font = "'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', sans-serif"
         summary_items = "\n".join(
-            f'<li style="font-family: {_font}; font-size: 15px; color: #2a3a5c; line-height: 1.7; margin-bottom: 8px; word-break: keep-all;">{html.escape(item)}</li>'
+            f'<li style="font-family: {_FONT}; font-size: 15px; color: #2a3a5c; line-height: 1.7; margin-bottom: 8px; word-break: keep-all;">{html.escape(item)}</li>'
             for item in article.summary_points
         )
 
         section_parts = []
         for section in article.sections:
             paragraphs_html = "".join(
-                f'<p style="font-family: {_font}; font-size: 16px; color: #3a4a62; margin: 0 0 14px; line-height: 1.9; word-break: keep-all;">{html.escape(paragraph)}</p>'
+                f'<p style="font-family: {_FONT}; font-size: 16px; color: #3a4a62; margin: 0 0 14px; line-height: 1.9; word-break: keep-all;">{html.escape(paragraph)}</p>'
                 for paragraph in section.paragraphs
             )
             insight_html = ""
             if section.expert_insight:
                 insight_html = (
                     f'<div style="background: #f0f4ff; border-left: 4px solid #3268ff; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 4px 0 20px;">'
-                    f'<div style="font-family: {_font}; font-size: 12px; font-weight: 700; color: #3268ff; margin-bottom: 6px; letter-spacing: 0.04em;">전문가 인사이트</div>'
-                    f'<p style="font-family: {_font}; font-size: 15px; color: #2a3a5c; margin: 0; line-height: 1.75; word-break: keep-all;">{html.escape(section.expert_insight)}</p>'
+                    f'<div style="font-family: {_FONT}; font-size: 12px; font-weight: 700; color: #3268ff; margin-bottom: 6px; letter-spacing: 0.04em;">전문가 인사이트</div>'
+                    f'<p style="font-family: {_FONT}; font-size: 15px; color: #2a3a5c; margin: 0; line-height: 1.75; word-break: keep-all;">{html.escape(section.expert_insight)}</p>'
                     f'</div>'
                 )
             section_parts.append(
                 f"<section>"
-                f'<h2 style="font-family: {_font}; font-size: 22px; font-weight: 800; color: #1c2741; margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 2px solid #eef2f7; letter-spacing: -0.02em; line-height: 1.4; word-break: keep-all;">{html.escape(section.heading)}</h2>'
+                f'<h2 style="font-family: {_FONT}; font-size: 22px; font-weight: 800; color: #1c2741; margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 2px solid #eef2f7; letter-spacing: -0.02em; line-height: 1.4; word-break: keep-all;">{html.escape(section.heading)}</h2>'
                 + paragraphs_html
                 + insight_html
                 + "</section>"
@@ -52,15 +135,16 @@ class HtmlRenderer:
         sources_section = ""
         if article.sources:
             source_items = "\n".join(
-                f'<li style="font-family: {_font}; font-size: 13px; color: #7a8699; line-height: 1.6;">{html.escape(src)}</li>'
+                f'<li style="font-family: {_FONT}; font-size: 13px; color: #7a8699; line-height: 1.6;">{html.escape(src)}</li>'
                 for src in article.sources
             )
             sources_section = (
                 f'<div style="margin-top: 28px; padding: 16px 18px; border-radius: 10px; background: #f8f9fb; border: 1px solid #e1e5eb;">'
-                f'<div style="font-family: {_font}; font-size: 13px; font-weight: 700; color: #7a8699; margin-bottom: 8px;">참고 자료</div>'
+                f'<div style="font-family: {_FONT}; font-size: 13px; font-weight: 700; color: #7a8699; margin-bottom: 8px;">참고 자료</div>'
                 f'<ul style="margin: 0; padding-left: 16px;">{source_items}</ul>'
                 f'</div>'
             )
+        cta_section = _build_cta_section(article.tags)
         return self.template.safe_substitute(
             title=html.escape(article.title),
             subtitle=html.escape(article.subtitle),
@@ -73,4 +157,5 @@ class HtmlRenderer:
             tag_items=tag_items,
             disclaimer=html.escape(article.disclaimer),
             sources_section=sources_section,
+            cta_section=cta_section,
         )
