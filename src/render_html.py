@@ -65,28 +65,45 @@ def _build_cta_section(tags: list[str]) -> str:
     cards = []
     for p in products:
         cards.append(
+            # 카드 전체는 div — a 태그로 감싸면 Blogger가 텍스트 색상을 링크 색으로 덮어씀
+            f'<div style="background:#ffffff; border:2px solid #dde6ff; border-radius:16px; '
+            f'padding:20px 20px 18px; flex:1; min-width:260px; box-sizing:border-box;">'
+            # 배지
+            f'<div style="display:inline-block; background:#ebf0ff; color:#3268ff; font-family:{_FONT}; '
+            f'font-size:11px; font-weight:700; padding:3px 10px; border-radius:99px; '
+            f'margin-bottom:12px; letter-spacing:0.04em;">추천 영양제</div>'
+            # 상품명
+            f'<div style="font-family:{_FONT}; font-size:16px; font-weight:800; color:#1c2741; '
+            f'margin-bottom:6px; line-height:1.4; word-break:keep-all;">{html.escape(p["name"])}</div>'
+            # 설명
+            f'<div style="font-family:{_FONT}; font-size:13px; color:#5a6a85; line-height:1.65; '
+            f'word-break:keep-all; margin-bottom:18px;">{html.escape(p["desc"])}</div>'
+            # CTA 버튼 (a 태그는 버튼에만)
             f'<a href="{p["url"]}" target="_blank" rel="noopener sponsored" '
-            f'style="display:flex; align-items:center; justify-content:space-between; gap:12px; '
-            f'text-decoration:none; background:#fff; border:1.5px solid #e1e8ff; border-radius:12px; '
-            f'padding:16px 18px; flex:1; min-width:240px; box-sizing:border-box;">'
-            f'<div>'
-            f'<div style="font-family:{_FONT}; font-size:13px; font-weight:700; color:#3268ff; margin-bottom:4px;">추천 영양제</div>'
-            f'<div style="font-family:{_FONT}; font-size:15px; font-weight:800; color:#1c2741; margin-bottom:6px; word-break:keep-all;">{html.escape(p["name"])}</div>'
-            f'<div style="font-family:{_FONT}; font-size:13px; color:#5a6a85; line-height:1.5; word-break:keep-all;">{html.escape(p["desc"])}</div>'
+            f'style="display:block; text-align:center; background:#ff5c42; color:#ffffff !important; '
+            f'font-family:{_FONT}; font-size:14px; font-weight:700; padding:13px 0; '
+            f'border-radius:10px; text-decoration:none !important; letter-spacing:0.01em;">쿠팡에서 구매하기 →</a>'
             f'</div>'
-            f'<div style="flex-shrink:0; background:#ff6b57; color:#fff; font-family:{_FONT}; font-size:13px; '
-            f'font-weight:700; padding:10px 16px; border-radius:999px; white-space:nowrap;">쿠팡 구매 →</div>'
-            f'</a>'
         )
     cards_html = "\n".join(cards)
     return (
-        f'<div style="margin-top:40px; padding-top:32px; border-top:2px solid #eef2f7;">'
-        f'<div style="font-family:{_FONT}; font-size:18px; font-weight:800; color:#1c2741; margin-bottom:16px; letter-spacing:-0.02em;">이 글과 함께 챙기면 좋은 영양제</div>'
-        f'<div style="display:flex; flex-wrap:wrap; gap:12px;">'
+        # 외부 래퍼 — 연한 그라데이션 배경으로 섹션 구분
+        f'<div style="margin-top:48px; padding:24px 22px 20px; '
+        f'background:linear-gradient(135deg,#f0f4ff 0%,#fff5f3 100%); border-radius:20px;">'
+        # 상단 레이블
+        f'<div style="font-family:{_FONT}; font-size:11px; font-weight:700; color:#3268ff; '
+        f'letter-spacing:0.12em; margin-bottom:6px;">HEALTH SUPPLEMENT</div>'
+        # 섹션 제목
+        f'<div style="font-family:{_FONT}; font-size:18px; font-weight:800; color:#1c2741; '
+        f'margin-bottom:18px; letter-spacing:-0.02em; line-height:1.4;">이 글과 함께 챙기면 좋은 영양제</div>'
+        # 카드 그리드
+        f'<div style="display:flex; flex-wrap:wrap; gap:14px;">'
         f'{cards_html}'
         f'</div>'
-        f'<p style="font-family:{_FONT}; font-size:11px; color:#9aa5b8; margin:14px 0 0; line-height:1.6;">'
-        f'{html.escape(_COUPANG_DISCLOSURE)}</p>'
+        # 쿠팡 파트너스 고지
+        f'<p style="font-family:{_FONT}; font-size:11px; color:#aab3c6; margin:16px 0 0; '
+        f'line-height:1.6; padding-top:14px; border-top:1px solid rgba(50,104,255,0.1);">'
+        f'※ {html.escape(_COUPANG_DISCLOSURE)}</p>'
         f'</div>'
     )
 
