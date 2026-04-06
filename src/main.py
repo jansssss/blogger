@@ -7,7 +7,7 @@ from src.blogger_client import BloggerClient
 from src.config import load_config
 from src.generate_post import ArticleGenerator
 from src.render_html import HtmlRenderer
-from src.research import PerplexityResearcher
+from src.research import OpenAIResearcher
 from src.topic_queue import TopicQueue
 
 
@@ -66,13 +66,13 @@ def main() -> None:
 
     topic = pick_topic(topic_queue, getattr(args, "topic_id", None))
     research = None
-    if config.perplexity_api_key:
+    if config.openai_api_key:
         try:
-            researcher = PerplexityResearcher(config.perplexity_api_key)
+            researcher = OpenAIResearcher(config.openai_api_key, config.openai_model)
             research = researcher.research(topic)
-            print(f"[INFO] Perplexity 리서치 완료 ({len(research)}자)", flush=True)
+            print(f"[INFO] OpenAI 리서치 완료 ({len(research)}자)", flush=True)
         except Exception as exc:
-            print(f"[WARN] Perplexity 리서치 실패, 생략: {exc}", flush=True)
+            print(f"[WARN] OpenAI 리서치 실패, 생략: {exc}", flush=True)
     generator = ArticleGenerator(
         theme_name=config.theme_name,
         prompt_path=config.prompt_path,

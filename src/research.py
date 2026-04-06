@@ -7,16 +7,17 @@ from urllib.error import HTTPError
 from src.topic_queue import Topic
 
 
-class PerplexityResearcher:
-    API_URL = "https://api.perplexity.ai/chat/completions"
+class OpenAIResearcher:
+    API_URL = "https://api.openai.com/v1/chat/completions"
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(self, api_key: str, model: str = "gpt-4o-mini") -> None:
         self.api_key = api_key
+        self.model = model
 
     def research(self, topic: Topic) -> str:
         query = f"{topic.title_hint} ({topic.angle}) - {', '.join(topic.keywords)}"
         payload = {
-            "model": "sonar-pro",
+            "model": self.model,
             "messages": [
                 {
                     "role": "system",
@@ -58,4 +59,4 @@ class PerplexityResearcher:
                 return data["choices"][0]["message"]["content"]
         except HTTPError as e:
             body = e.read().decode("utf-8")
-            raise RuntimeError(f"Perplexity HTTP {e.code}: {body}") from e
+            raise RuntimeError(f"OpenAI HTTP {e.code}: {body}") from e

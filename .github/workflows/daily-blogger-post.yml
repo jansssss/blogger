@@ -40,7 +40,6 @@ jobs:
           BLOG_THEME_NAME: ${{ secrets.BLOG_THEME_NAME }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
-          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
           BLOGGER_REFRESH_TOKEN: ${{ secrets.BLOGGER_REFRESH_TOKEN }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -51,7 +50,6 @@ jobs:
           printf 'BLOG_THEME_NAME=%s\n' "$BLOG_THEME_NAME" >> .env
           printf 'OPENAI_API_KEY=%s\n' "$OPENAI_API_KEY" >> .env
           printf 'OPENAI_MODEL=%s\n' "$OPENAI_MODEL" >> .env
-          printf 'PERPLEXITY_API_KEY=%s\n' "$PERPLEXITY_API_KEY" >> .env
           printf 'BLOGGER_BLOG_ID=%s\n' "$BLOGGER_BLOG_ID" >> .env
           printf 'BLOGGER_REFRESH_TOKEN=%s\n' "$BLOGGER_REFRESH_TOKEN" >> .env
           printf 'GOOGLE_CLIENT_ID=%s\n' "$GOOGLE_CLIENT_ID" >> .env

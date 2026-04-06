@@ -16,7 +16,6 @@ class AppConfig:
     payload_dir: Path
     openai_api_key: str | None
     openai_model: str              # 기본: gpt-5.4-mini (env로 교체 가능)
-    perplexity_api_key: str | None
     blogger_blog_id: str | None
     blogger_access_token: str | None
     blogger_refresh_token: str | None
@@ -52,7 +51,6 @@ def load_config() -> AppConfig:
         payload_dir=project_root / "output" / "payloads",
         openai_api_key=os.getenv("OPENAI_API_KEY") or None,
         openai_model=os.getenv("OPENAI_MODEL", "gpt-5.4-mini"),
-        perplexity_api_key=os.getenv("PERPLEXITY_API_KEY") or None,
         blogger_blog_id=os.getenv("BLOGGER_BLOG_ID") or None,
         blogger_access_token=os.getenv("BLOGGER_ACCESS_TOKEN") or None,
         blogger_refresh_token=os.getenv("BLOGGER_REFRESH_TOKEN") or None,
