@@ -41,7 +41,7 @@ class OpenAIResearcher:
                     ),
                 },
             ],
-            "max_tokens": 1000,
+            "max_completion_tokens": 1000,
         }
         raw_body = json.dumps(payload).encode("utf-8")
         req = request.Request(
