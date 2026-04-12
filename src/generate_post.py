@@ -179,10 +179,13 @@ class ArticleGenerator:
             f"[WRITER] 완료! 토큰={usage.get('prompt_tokens', 0)}→{usage.get('completion_tokens', 0)}",
             flush=True,
         )
-        json_match = re.search(r"\{.*\}", content_text, re.DOTALL)
-        if json_match:
-            content_text = json_match.group(0)
-        data = json.loads(content_text)
+        try:
+            data = json.loads(_extract_json(content_text))
+        except json.JSONDecodeError as e:
+            snippet = content_text[:500].replace("\n", "\\n")
+            print(f"[WRITER] JSON 파싱 실패: {e}", flush=True)
+            print(f"[WRITER] 응답 앞 500자: {snippet}", flush=True)
+            raise RuntimeError(f"OpenAI JSON 파싱 실패: {e}") from e
         now = datetime.now()
         return Article(
             topic_id=topic.id,
@@ -205,6 +208,49 @@ class ArticleGenerator:
             updated_label=f"{now.year}년 {now.month}월 {now.day}일",
             sources=data.get("sources", []),
         )
+
+
+def _extract_json(text: str) -> str:
+    text = re.sub(r"^```(?:json)?\s*", "", text.strip())
+    text = re.sub(r"\s*```$", "", text.strip())
+    start = text.find("{")
+    if start == -1:
+        return text
+    depth = 0
+    for i, ch in enumerate(text[start:], start):
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return _fix_json_strings(text[start: i + 1])
+    return _fix_json_strings(text[start:])
+
+
+def _fix_json_strings(text: str) -> str:
+    result: list[str] = []
+    in_string = False
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch == "\\" and in_string:
+            result.append(ch)
+            i += 1
+            if i < len(text):
+                result.append(text[i])
+        elif ch == '"':
+            in_string = not in_string
+            result.append(ch)
+        elif in_string and ch == "\n":
+            result.append("\\n")
+        elif in_string and ch == "\r":
+            result.append("\\r")
+        elif in_string and ch == "\t":
+            result.append("\\t")
+        else:
+            result.append(ch)
+        i += 1
+    return "".join(result)
 
 
 def requests_post(url: str, headers: dict[str, str], payload: dict, timeout: int = 60) -> dict:
