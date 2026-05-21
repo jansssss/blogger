@@ -16,7 +16,7 @@ on:
           - draft
           - publish
   schedule:
-    - cron: "0 22 */3 * *"
+    - cron: "0 22 */2 * *"
 
 jobs:
   publish:
