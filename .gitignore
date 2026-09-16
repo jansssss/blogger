@@ -6,3 +6,4 @@ output/previews/*.html
 output/payloads/*.json
 !.gitkeep
 
+.omc/
