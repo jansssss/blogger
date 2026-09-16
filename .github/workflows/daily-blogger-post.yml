@@ -15,8 +15,9 @@ on:
         options:
           - draft
           - publish
-  schedule:
-    - cron: "0 22 */2 * *"
+  # 자동 실행 중지 (2026-09-16). 재개하려면 아래 두 줄의 주석을 해제하세요.
+  # schedule:
+  #   - cron: "0 22 */2 * *"
 
 jobs:
   publish:
